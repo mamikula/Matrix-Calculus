@@ -18,7 +18,7 @@ public class StrassenMatrixMultiplication implements Multiplicator {
     }
 
     public int[][] multiply(int[][] firstMatrix, int[][] secondMatrix) {
-        System.out.println("Strassen");
+//        System.out.println("Strassen");
         this.operationTimer.ifPresent(OperationTimer::start);
         var result = multiplyInner(firstMatrix, secondMatrix);
         this.operationTimer.ifPresent(OperationTimer::stop);

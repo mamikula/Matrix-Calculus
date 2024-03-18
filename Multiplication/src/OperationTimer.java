@@ -16,6 +16,6 @@ public final class OperationTimer {
 
     // get elasped time in seconds
     public double getElapsedTimeInSeconds() {
-        return (endTime - startTime) / 1_000_000_000.0;
+        return getElapsedTime() / 1_000_000_000.0;
     }
 }
