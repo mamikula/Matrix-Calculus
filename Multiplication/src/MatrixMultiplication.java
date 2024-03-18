@@ -21,7 +21,6 @@ public class MatrixMultiplication implements Multiplicator {
     }
 
     public int[][] multiply(int[][] A, int[][] B) {
-//        System.out.println("\nClassic");
         this.operationTimer.ifPresent(OperationTimer::start);
         int n = A.length;
         int sum = 0;
