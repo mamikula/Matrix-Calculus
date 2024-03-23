@@ -1,6 +1,31 @@
-public class StrassenMatrixMultiplication {
+import java.util.Optional;
 
-    public static int[][] multiply(int[][] A, int[][] B) {
+public class StrassenMatrixMultiplication implements Multiplicator {
+
+    private Optional<OperationCounter> operationCounter = Optional.empty();
+    private Optional<OperationTimer> operationTimer = Optional.empty();
+
+
+    public StrassenMatrixMultiplication(OperationTimer operationTimer, OperationCounter operationCounter) {
+        this.operationCounter = Optional.of(operationCounter);
+        this.operationTimer = Optional.of(operationTimer);
+    }
+    public StrassenMatrixMultiplication(OperationTimer operationTimer) {
+        this.operationTimer = Optional.of(operationTimer);
+    }
+    public StrassenMatrixMultiplication(OperationCounter operationCounter) {
+        this.operationCounter = Optional.of(operationCounter);
+    }
+
+    public int[][] multiply(int[][] firstMatrix, int[][] secondMatrix) {
+//        System.out.println("Strassen");
+        this.operationTimer.ifPresent(OperationTimer::start);
+        var result = multiplyInner(firstMatrix, secondMatrix);
+        this.operationTimer.ifPresent(OperationTimer::stop);
+        return result;
+    }
+
+    private int[][] multiplyInner(int[][] A, int[][] B) {
         int n = A.length;
 
         // Warunek stopu rekurencji
@@ -32,14 +57,14 @@ public class StrassenMatrixMultiplication {
             divideMatrix(B, B21, n/2, 0);
             divideMatrix(B, B22, n/2, n/2);
 
-            //Nowe wartości które zmniejszają liczbę mnożeń z 8 do 7
-            int[][] M1 = multiply(addMatrix(A11, A22), addMatrix(B11, B22));
-            int[][] M2 = multiply(addMatrix(A21, A22), B11);
-            int[][] M3 = multiply(A11, subtractMatrix(B12, B22));
-            int[][] M4 = multiply(A22, subtractMatrix(B21, B11));
-            int[][] M5 = multiply(addMatrix(A11, A12),  B22);
-            int[][] M6 = multiply(subtractMatrix(A21, A11), addMatrix(B11, B12));
-            int[][] M7 = multiply(subtractMatrix(A12, A22), addMatrix(B21, B22));
+            //Nowe wartości, które zmniejszają liczbę mnożeń z 8 do 7
+            int[][] M1 = multiplyInner(addMatrix(A11, A22), addMatrix(B11, B22));
+            int[][] M2 = multiplyInner(addMatrix(A21, A22), B11);
+            int[][] M3 = multiplyInner(A11, subtractMatrix(B12, B22));
+            int[][] M4 = multiplyInner(A22, subtractMatrix(B21, B11));
+            int[][] M5 = multiplyInner(addMatrix(A11, A12),  B22);
+            int[][] M6 = multiplyInner(subtractMatrix(A21, A11), addMatrix(B11, B12));
+            int[][] M7 = multiplyInner(subtractMatrix(A12, A22), addMatrix(B21, B22));
 
             // Obliczanie podmacierzy wynikowej
             int[][] C11 = addMatrix(subtractMatrix(addMatrix(M1, M4), M5), M7);
@@ -59,9 +84,10 @@ public class StrassenMatrixMultiplication {
     }
 
     // Metoda do dzielenia macierzy
-    public static void divideMatrix(int[][] parent, int[][] child, int rowShift, int colShift) {
+    public void divideMatrix(int[][] parent, int[][] child, int rowShift, int colShift) {
         for (int i = 0; i < child.length; i++) {
             for (int j = 0; j < child.length; j++) {
+                this.operationCounter.ifPresent(OperationCounter::increment);
                 child[i][j] = parent[i + rowShift][j + colShift];
             }
         }
@@ -77,11 +103,12 @@ public class StrassenMatrixMultiplication {
     }
 
     // Metoda do dodawania macierzy
-    public static int[][] addMatrix(int[][] A, int[][] B) {
+    public int[][] addMatrix(int[][] A, int[][] B) {
         int n = A.length;
         int[][] C = new int[n][n];
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
+                this.operationCounter.ifPresent(OperationCounter::increment);
                 C[i][j] = A[i][j] + B[i][j];
             }
         }
@@ -89,11 +116,12 @@ public class StrassenMatrixMultiplication {
     }
 
     // Metoda do odejmowania macierzy
-    public static int[][] subtractMatrix(int[][] A, int[][] B) {
+    public int[][] subtractMatrix(int[][] A, int[][] B) {
         int n = A.length;
         int[][] C = new int[n][n];
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
+                this.operationCounter.ifPresent(OperationCounter::increment);
                 C[i][j] = A[i][j] - B[i][j];
             }
         }
@@ -107,15 +135,5 @@ public class StrassenMatrixMultiplication {
             }
             System.out.println();
         }
-    }
-
-    public static void main(String[] args) {
-        int[][] A = {{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}, {13, 14, 15, 16}};
-        int[][] B = {{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}, {13, 14, 15, 16}};
-
-        int[][] result = multiply(A, B);
-
-        // Wyświetlenie wyniku
-        printResult(result);
     }
 }
